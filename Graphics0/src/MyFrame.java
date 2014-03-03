@@ -39,6 +39,7 @@ public class MyFrame extends JFrame
     /** Height in pixels of my canvas */
     private static final int HEIGHT = 400;
 
+    /** Drawing the square and clears the screen */
     private Creator myCreator = null;
 
     /** Main panel */
