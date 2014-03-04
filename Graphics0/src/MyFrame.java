@@ -1,6 +1,8 @@
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
@@ -39,6 +41,12 @@ public class MyFrame extends JFrame
     /** Height in pixels of my canvas */
     private static final int HEIGHT = 400;
 
+    /** Minimal width in pixels of my canvas */
+    private static final int MINWIDTH = 600;
+
+    /** Minimal height in pixels of my canvas */
+    private static final int MINHEIGHT = 400;
+
     /** Drawing the square and clears the screen */
     private Creator myCreator = null;
 
@@ -56,6 +64,12 @@ public class MyFrame extends JFrame
 
     /** Button "Exit" */
     private JButton exitButton = null;
+
+    /** Button "Draw square" */
+    private JButton squareButton = null;
+
+    /** Button "Clear screen" */
+    private JButton clearButton = null;
 
     /** Menu #1 */
     private JMenu file = null;
@@ -75,6 +89,9 @@ public class MyFrame extends JFrame
     /** Submenu in the "File"  */
     private JMenuItem save = null;
 
+    /** Submenu in the "File" */
+    private JMenuItem exit = null;
+
     /** Submenu in the "Draw". Drawing green square */
     private JMenuItem drawSquare = null;
 
@@ -84,19 +101,30 @@ public class MyFrame extends JFrame
     /** Submenu in the "Help. Contains infor about me */
     private JMenuItem about = null;
 
+    /** Class for drawing */
     private MyCanvas myCanvas = null;
 
     /** Create a frame */
     public MyFrame()
     {
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-        myCreator = new Creator(WIDTH, HEIGHT);
+        Dimension minFrameSize = new Dimension(MINWIDTH, MINHEIGHT);
         this.setTitle(TITLE);
+        this.setMinimumSize(minFrameSize);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         initDrawPanel();
+        myCreator = new Creator(myCanvas);
         initMenuBar();
         initToolBar();
         this.setLocation(dim.width / 2 - this.getWidth() / 2, dim.height / 2 - this.getHeight() / 2);
+        this.addComponentListener(new ComponentAdapter()
+        {
+            @Override
+            public void componentResized(ComponentEvent e)
+            {
+                myCanvas.setSizeOfPanel(e.getComponent().getSize());
+            }
+        });
         this.setVisible(true);
     }
 
@@ -105,7 +133,6 @@ public class MyFrame extends JFrame
     {
         myCanvas = new MyCanvas(WIDTH, HEIGHT);
         this.add(myCanvas);
-        this.pack();
     }
 
     /** Initiate menubar */
@@ -119,9 +146,18 @@ public class MyFrame extends JFrame
         create = new JMenuItem("Create");
         open = new JMenuItem("Open");
         save = new JMenuItem("Save");
+        exit = new JMenuItem("Exit");
+        exit.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                System.exit(0);
+            }
+        });
         file.add(create);
         file.add(open);
         file.add(save);
+        file.add(exit);
         draw = new JMenu("Draw");
         drawSquare = new JMenuItem("Draw Square");
         drawSquare.addActionListener(new ActionListener()
@@ -129,28 +165,7 @@ public class MyFrame extends JFrame
             @Override
             public void actionPerformed(ActionEvent e)
             {
-                String lenString = "";
-                while (true)
-                {
-                    lenString = JOptionPane.showInputDialog(null, null, ENTERSIDE, JOptionPane.QUESTION_MESSAGE);
-                    if(null == lenString)
-                    {
-                        break;
-                    }
-                    else if(lenString.equals(""))
-                    {
-                        JOptionPane.showMessageDialog(null, BADSIZE, null, JOptionPane.OK_OPTION);
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-                if(null != lenString)
-                {
-                    int len = Integer.parseInt(lenString);
-                    myCanvas.setImage(myCreator.makeSquare(len));
-                }
+                drawSquare();
             }
         });
         cls = new JMenuItem("Clear");
@@ -182,8 +197,24 @@ public class MyFrame extends JFrame
     private void initToolBar()
     {
         myToolBar = new JToolBar();
-        helpButton = new JButton(HELP);
-        exitButton = new JButton(EXIT);
+        squareButton = new JButton();
+        clearButton = new JButton();
+        helpButton = new JButton();
+        exitButton = new JButton();
+        squareButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                drawSquare();
+            }
+        });
+        clearButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                myCanvas.setImage(myCreator.makeClear());
+            }
+        });
         helpButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e)
@@ -202,12 +233,18 @@ public class MyFrame extends JFrame
         {
             Image exitImg = ImageIO.read(getClass().getResource("exit.png"));
             Image helpImg = ImageIO.read(getClass().getResource("help.png"));
+            Image squareImage = ImageIO.read(getClass().getResource("gsquare.png"));
+            Image clearImg = ImageIO.read(getClass().getResource("clear.png"));
             exitButton.setIcon(new ImageIcon(exitImg));
             helpButton.setIcon(new ImageIcon(helpImg));
+            squareButton.setIcon(new ImageIcon(squareImage));
+            clearButton.setIcon(new ImageIcon(clearImg));
         } catch(IOException ioe)
         {
             System.exit(1);
         }
+        myToolBar.add(squareButton);
+        myToolBar.add(clearButton);
         myToolBar.add(helpButton);
         myToolBar.add(exitButton);
         myToolBar.setFloatable(false);
@@ -218,5 +255,43 @@ public class MyFrame extends JFrame
     public void info()
     {
         JOptionPane.showMessageDialog(this, INFO, TITLEINFO, JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    /** Draw square */
+    public void drawSquare()
+    {
+        String lenString = "";
+        while (true)
+        {
+            lenString = JOptionPane.showInputDialog(null, null, ENTERSIDE, JOptionPane.QUESTION_MESSAGE);
+            if(null == lenString)
+            {
+                break;
+            }
+            else if(lenString.equals(""))
+            {
+                JOptionPane.showMessageDialog(null, BADSIZE, null, JOptionPane.OK_OPTION);
+            }
+            else
+            {
+                break;
+            }
+        }
+        if(null != lenString)
+        {
+            Integer len = null;
+            try
+            {
+                len = Integer.parseInt(lenString);
+            }
+            catch (NumberFormatException nfe)
+            {
+                nfe.printStackTrace();
+            }
+            if(null != len)
+            {
+                myCanvas.setImage(myCreator.makeSquare(len));
+            }
+        }
     }
 }

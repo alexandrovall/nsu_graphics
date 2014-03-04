@@ -7,6 +7,9 @@ import java.awt.image.BufferedImage;
  */
 public class Creator
 {
+    /** This interface contains method "getSizeOfPanel()". */
+    private IMyPanel myPanel = null;
+
     /** Width of the canvas */
     private int width = 0;
 
@@ -14,13 +17,14 @@ public class Creator
     private int height = 0;
 
     /** Constructor
-     * @param width is width of the canvas
-     * @param height is height of the canvas
+     * @param myPanel is object which implements interface IMyPanel
      * */
-    public Creator(int width, int height)
+    public Creator(IMyPanel myPanel)
     {
-        this.width = width;
-        this.height = height;
+        this.myPanel = myPanel;
+        Dimension size = myPanel.getSizeOfPanel();
+        this.width = size.width;
+        this.height = size.height;
     }
 
     /**
@@ -30,9 +34,13 @@ public class Creator
      */
     public BufferedImage makeSquare(int len)
     {
-        int halflen = len / 2;
-        if(len > 0 && len < width && len < height)
+        Dimension size = myPanel.getSizeOfPanel();
+        int min = Math.min(size.width, size.height);
+        if(len > 0 && len < min)
         {
+            this.width = size.width;
+            this.height = size.height;
+            int halflen = len / 2;
             BufferedImage square = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
             for(int i = width / 2 - halflen; i < width / 2 + halflen; i++)
             {

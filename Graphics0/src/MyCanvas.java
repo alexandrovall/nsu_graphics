@@ -1,24 +1,16 @@
-import com.sun.corba.se.impl.orbutil.graph.Graph;
-
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.image.BufferedImage;
-import java.awt.image.WritableRaster;
-import java.nio.Buffer;
 
 /**
  * Created by Андрей on 03.03.14.
  */
 
 
-public class MyCanvas extends JPanel
+public class MyCanvas extends JPanel implements IMyPanel
 {
-    /** Width of the canvas */
-    private int width = 0;
-
-    /** Height of the canvas */
-    private int height = 0;
-
     /** Image for drowing (canvas) */
     private BufferedImage image = null;
 
@@ -30,8 +22,7 @@ public class MyCanvas extends JPanel
     public MyCanvas(int width, int height)
     {
         setPreferredSize(new Dimension(width, height));
-        this.width = width;
-        this.height = height;
+        this.setBackground(Color.white);
     }
 
     /**
@@ -42,7 +33,8 @@ public class MyCanvas extends JPanel
     public void paintComponent(Graphics g)
     {
         super.paintComponent(g);
-        g.drawImage(image, 0, 0, width, height, null);
+        Graphics2D g2d = (Graphics2D)g;
+        g2d.drawImage(image, null, null);
     }
 
     /**
@@ -53,5 +45,19 @@ public class MyCanvas extends JPanel
     {
         this.image = image;
         repaint();
+    }
+
+    /**
+     *  For correct drawing
+     * @return the size of JPanel
+     */
+    public Dimension getSizeOfPanel()
+    {
+        return this.getSize();
+    }
+
+    public void setSizeOfPanel(Dimension size)
+    {
+        setPreferredSize(size);
     }
 }
